@@ -1,0 +1,292 @@
+---
+title: "learn R"
+author: "EnCi"
+date: "2020/5/21"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# R for data science 学习笔记
+# [参考图书](https://r4ds.had.co.nz/data-visualisation.html#coordinate-systems)
+
+# 1. 可视化
+```{r load packages, include=FALSE}
+library(tidyverse)
+```
+
+## ggplot2
+* aes
+* geom
+* facet
+
+```{r 使用模板,}
+# ggplot(data = <DATA>) + 
+#   <GEOM_FUNCTION>(
+#      mapping = aes(<MAPPINGS>),
+#      stat = <STAT>, 
+#      position = <POSITION>
+#   ) +
+#   <COORDINATE_FUNCTION> +
+#   <FACET_FUNCTION>
+
+```
+
+
+### 美学特征 aes
+
+
+   * ![图点类型](https://d33wubrfki0l68.cloudfront.net/58a48d625b4bd494cd685dd9998f5c74e9c16907/211c6/visualize_files/figure-html/shapes-1.png)
+
+```{r 美学特征aes, echo=TRUE}
+ggplot(data=mpg)+
+  geom_point(mapping = aes(x=displ,y=hwy))#散点图
+
+###用法
+#ggplot(data = <DATA>) + 
+#  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+
+# 
+# nrow(mpg)
+# ncol(mpg)
+# dim(mpg)
+# ?mpg
+# ggplot(data=mpg)+
+#   geom_point(mapping = aes(cyl,hwy))
+
+#数据的维度不仅可以有value,还可以有level
+#比如不同种类的不同值，这个不同种类可以用不同形状或者不同颜色、不同大小对level进行区分。
+#pch 散点图的性状，内置有25种，
+# ![图点类型](https://d33wubrfki0l68.cloudfront.net/58a48d625b4bd494cd685dd9998f5c74e9c16907/211c6/visualize_files/figure-html/shapes-1.png)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, size = class))
+#> Warning: Using size for a discrete variable is not advised.
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+
+# ggplot(data = mpg) + 
+#   geom_point(mapping = aes(x = displ, y = hwy, color = displ<5)
+
+```
+
+### 分面 facets_wrap
+
+```{r 分面, echo=TRUE}
+ ggplot(data = mpg) + 
+   geom_point(mapping = aes(x = displ, y = hwy)) + 
+   facet_wrap(~ class, nrow = 2) #facet_wrap ~这个后面跟一个分类变量
+ 
+ ggplot(data = mpg) + 
+   geom_point(mapping = aes(x = displ, y = hwy)) + 
+   facet_grid(.~ cty)
+ 
+ 
+ 
+ ggplot(data = mpg) + 
+   geom_point(mapping = aes(x = displ, y = hwy)) +
+   facet_grid(drv ~ .)
+ 
+ ggplot(data = mpg) + 
+   geom_point(mapping = aes(x = displ, y = hwy)) +
+   facet_grid(. ~ cyl)
+             
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+
+### 图形对象 geom
+Geometric objects geom就是这个的缩写
+
+```{r 图形对象, echo=TRUE}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))#散点图
+
+ggplot(data = mpg) + 
+  geom_smooth(mapping = aes(x = displ, y = hwy)) #拟合曲线
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))+
+  geom_smooth(mapping = aes(x = displ, y = hwy,linetype=drv))#添加拟合曲线图层
+ggplot(data=mpg)+  
+  geom_smooth(mapping = aes(x = displ, y = hwy,colour=drv))#添加拟合曲线图层
+
+#geom_smooth(se=F) SE指的曲线是包不包括散点的区间
+
+
+#条形图 geom_bar
+ggplot(data=diamonds)+
+  geom_bar(mapping = aes(x=cut)) #横坐标cut等级，纵坐标计数（bar底层是有计数函数的）
+
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = stat(prop), group = 1))# 百分比
+
+#当以分类变量作为Fill的时候，有三个位置可以选择，identity（堆叠） dodge,合并， fill 填充满
+
+```
+
+### 坐标系 coord
+
+```{r 坐标系,}
+#coord_flip()转换坐标系 
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+
+
+#coord_polar 转化为极坐标系（玫瑰图就是这样做的）
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar + coord_flip()
+bar + coord_polar()
+```
+
+
+# 2.数据转换
+##学习dplyr 清理数据
+* filter 
+* arrange
+* select 
+* mutate 
+* summarise
+* group_by
+
+### 筛选
+```{r 筛选, eval=FALSE, include=FALSE}
+install.packages("nycflights13")
+library(nycflights13)
+library(tidyverse)
+flights
+#filter
+jan1 <- filter(flights,month==1,day==1)#(数据集，筛选条件)
+hea
+
+```
+逻辑符号
+& 和  
+|或
+!非
+%in% 后面可以跟向量 %in%c( ),也可以把字符型的放在里面
+
+### 缺失值
+is.na()
+sum(is.na())
+drop_na(x,value)
+
+arrange排序
+arrange(flights,year,month,year)#默认升序，desc()改为降序
+```{r 排序, eval=FALSE, include=FALSE}
+arrange(flights,year,month,year)
+#NA永远在最后
+
+```
+
+### 选择变量  select
+select(flight,year,month,day)
+```{r 选择变量, eval=FALSE, include=FALSE}
+select(flights,year,month,year)
+
+select(flights, year:day)# Select all columns between year and day (inclusive)
+select(flights, -(year:day))# Select all columns except those from year to day (inclusive)
+
+```
+
+###重命名
+```{r 重命名, eval=FALSE, include=FALSE}
+rename(flights,tail_num=tail_num)
+
+```
+
+### 添加新变量
+```{r 添加新变量, eval=FALSE, include=FALSE}
+#mutate 数据变换产生新变量，产生新的列
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+mutate(flights_sml,
+  gain = dep_delay - arr_delay,
+  speed = distance / air_time * 60
+)
+
+#transmute 产生新变量，并且只保留新变量
+
+#数学运算
+#%/% 整除取整
+#%% 取余数
+# log() log2() log10()
+#连加 连乘 cumsum(), cumprod(), cummin(), cummax()
+
+```
+
+### 分组和总数
+
+```{r 分组, eval=FALSE, include=FALSE}
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+
+#分组group_by
+#解开分组ungroup
+
+```
+
+### 管道操作
+主要是为了减少中间变量的命名，缩短代码长度，相当于:用上一步产生的数据然后...
+
+```{r}
+by_dest <- group_by(flights, dest)
+delay <- summarise(by_dest,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE)
+)
+delay <- filter(delay, count > 20, dest != "HNL")
+
+delays <- flights%>%
+  group_by(dest)%>%
+  summarise(
+    count=n(),
+    dist=mean(distance,na.rm = T),
+    delay=mean(arr_delay,na.rm = T)
+            )%>%
+  filter(count>20,dest !='HNL')
+
+# sd(x), IQR(x), mad(x) min(x), quantile(x, 0.25), max(x) first(x), nth(x, 2), last(x)
+# n_distinct(x)#去重后的
+
+```
+### count计数 
+很有用
