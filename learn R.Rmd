@@ -266,7 +266,7 @@ summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 ### 管道操作
 主要是为了减少中间变量的命名，缩短代码长度，相当于:用上一步产生的数据然后...
 
-```{r}
+```{r 管道操作,}
 by_dest <- group_by(flights, dest)
 delay <- summarise(by_dest,
   count = n(),
@@ -290,3 +290,110 @@ delays <- flights%>%
 ```
 ### count计数 
 很有用
+
+# 3.探索性分析EDA
+先学会提出问题，在大量的问题中找到高质量的问题
+
+变量是什么类型
+协变量是什么类型
+
+变异：不同观测之间的差别，可以在分析之前先看变量的分布（可视化）
+###对于分类变量，可以使用比如条形图：
+```{r 分类变量条形图, echo=FALSE}
+ggplot(data=diamonds)+
+  geom_bar(mapping=aes(x=cut))
+#底层默认是计数count
+```
+
+###对于连续变量，可以使用直方图
+```{r 连续变量直方图,}
+ggplot(data=diamonds)+
+  geom_histogram(mapping = aes(x=carat),binwidth = 0.5) #底层也是计数
+ggplot(data=diamonds)+
+  geom_histogram(mapping = aes(x=carat),binwidth = 0.1)
+#binwidth是组距,不同的组距会有不一样的感受
+
+#画多组直方图可以选择用线代替
+ggplot(data = diamonds, mapping = aes(x = carat, colour = cut)) +
+  geom_freqpoly(binwidth = 0.1)
+```
+
+```{r 设置坐标轴限制,}
+#设置坐标轴限制
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+```
+
+
+#### ifelse 语句，ifelse(逻辑判断，是的值，否的值)
+
+### 一个分类变量，一个连续变量，两变量之间的关系，分布，可以用厢式图
+```{r 箱式图,}
+ggplot(data=diamonds)+
+  geom_boxplot(mapping= aes(x=cut,y=price))
+```
+#### reorder可以对分类变量重新排序，geom_boxplot(mapping=aes(x=reorder(class,hwy,FUN=median),y=hwy))+coord_flip
+```{r 一个分类变量，一个连续变量,}
+ggplot(data=diamonds)+
+  geom_violin(mapping= aes(x=cut,y=price))
+
+ggplot(data=diamonds)+
+  geom_histogram(mapping= aes(x=price))+
+  facet_wrap(~ cut, nrow = 2)
+
+ggplot(data=diamonds)+
+  geom_freqpoly(mapping=aes(x=price,colour=cut))
+
+ggplot(data=diamonds)+
+  geom_jitter(mapping=aes(x=cut,y=price))
+```
+
+### 两个分类变量， 对两个分类变量进行计数（有点类似于列联表）
+```{r 两个分类变量,}
+ggplot(data=diamonds)+
+  geom_count(mapping=aes(x=cut,y=color))
+
+```
+```{r 两个分类变量 瓷砖图,}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = cut, y = color)) +
+    geom_tile(mapping = aes(fill = n))
+
+```
+### 两个连续变量
+```{r 两个连续变量 散点图,}
+ggplot(data=diamonds)+
+  geom_point(mapping=aes(x=carat,y=price))
+
+
+ggplot(data = diamonds) + 
+  geom_point(mapping = aes(x = carat, y = price), alpha = 1 / 100)
+
+
+ggplot(data = diamonds) +
+  geom_bin2d(mapping = aes(x = carat, y = price))
+
+
+ggplot(data = diamonds) +
+  geom_hex(mapping = aes(x = carat, y = price))
+```
+### 模型
+```{r 模型,}
+library(modelr)
+
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+diamonds2 <- diamonds %>% 
+  add_residuals(mod) %>% 
+  mutate(resid = exp(resid))
+
+ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = carat, y = resid))
+```
+
+
