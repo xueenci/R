@@ -266,7 +266,7 @@ summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 ### 管道操作
 主要是为了减少中间变量的命名，缩短代码长度，相当于:用上一步产生的数据然后...
 
-```{r 管道操作,}
+```{r 管道操作, eval=FALSE, include=FALSE}
 by_dest <- group_by(flights, dest)
 delay <- summarise(by_dest,
   count = n(),
@@ -396,4 +396,168 @@ ggplot(data = diamonds2) +
   geom_point(mapping = aes(x = carat, y = resid))
 ```
 
+#4.处理数据，数据清理
+
+## 数据工作的流程是：导入数据，整理数据，数据转化，可视化，模型，沟通
+
+### Tibble
+
+```{r 把 普通的data frame 转换成 tibble, eval=FALSE, include=FALSE}
+as_tibble(iris)
+
+tibble(
+  x=1:5,
+  y=1,#y可以自动补齐，类似于numpy
+  z=x^2+y
+)
+
+#也可以把tibble转换为data.frame
+as.data.frame(iris)
+```
+tibble不会自动把字符型转换为factor，不改变变量名，不创建行名
+```{r tribble,}
+tribble(
+  ~x, ~y, ~z,
+  #--|--|----
+  "a", 2, 3.6,
+  "b", 1, 8.5
+)
+
+#可以手动录入数据
+```
+tibble会自动打印前十行，会显示每个变量的类型
+
+
+###数据导入
+最常用的是read.csv read.table (read_csv,read_table)
+
+```{r read_csv,}
+#read_csv 和read.csv 是不同的，read_csv可以手动录入数据
+# read_csV读取文件之后会自动显示每一列变量的类型
+#手动录入的话默认会把第一行当做列名
+read_csv("1,2,3\n4,5,6", col_names = FALSE)
+
+read_csv("The first line of metadata
+  The second line of metadata
+```
+
+
+```{r read_csv,}
+x,y,z
+  1,2,3", skip = 2)#跳过前两行
+
+read_csv("# A comment I want to skip
+  x,y,z
+  1,2,3", comment = "#")#用#号做注释
+
+```
+
+read_csv和read.csv对比
+
+They are typically much faster (~10x) than their base equivalents. Long running jobs have a progress bar, so you can see what’s happening. If you’re looking for raw speed, try data.table::fread(). It doesn’t fit quite so well into the tidyverse, but it can be quite a bit faster.
+
+They produce tibbles, they don’t convert character vectors to factors, use row names, or munge the column names. These are common sources of frustration with the base R functions.
+
+They are more reproducible. Base R functions inherit some behaviour from your operating system and environment variables, so import code that works on your computer might not work on someone else’s.
+### 解析向量
+```{r 解析向量, eval=FALSE, include=FALSE}
+# parse_*()
+str(parse_logical(c("TRUE", "FALSE", "NA")))
+str(parse_integer(c("1", "2", "3")))
+str(parse_date(c("2010-01-01", "1979-10-14")))
+
+```
+
+
+####数字、字符串、时间、文件
+默认格式最好是UTF-8 
+guess_encoding(charToRaw(x2))
+parse_datetime("2010-10-01T2010")
+
+guess_parser(c("12,352,561")) 自动判断是什么类型的数据
+
+haven reads SPSS, Stata, and SAS files.
+
+readxl reads excel files (both .xls and .xlsx).
+
+DBI, along with a database specific backend (e.g. RMySQL, RSQLite, RPostgreSQL etc) allows you to run SQL queries against a database and return a data frame.
+
+For hierarchical data: use jsonlite (by Jeroen Ooms) for json, and xml2 for XML. 
+
+
+####输出文件
+```{r 输出文件, eval=FALSE, include=FALSE}
+write_csv(challenge, "challenge.csv")
+```
+feather包 可以输出二进制文件 .feather 
+
+
+###整理数据
+pivot_longer() and pivot_wider().
+```{r 转换成长格式,eval=FALSE, include=FALSE}
+table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+#> # A tibble: 6 x 3
+#>   country     year   cases
+#>   <chr>       <chr>  <int>
+#> 1 Afghanistan 1999     745
+#> 2 Afghanistan 2000    2666
+#> 3 Brazil      1999   37737
+#> 4 Brazil      2000   80488
+#> 5 China       1999  212258
+#> 6 China       2000  213766
+
+
+tidy4a <- table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+tidy4b <- table4b %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "population")
+left_join(tidy4a, tidy4b)# 左合并
+
+```
+
+![分列](C:\Users\xueenci\Desktop\1.png)
+```{r 分列和合并, eval=FALSE, include=FALSE}
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+#可以指定分隔符
+  separate(rate, into = c("cases", "population"), sep = "/")
+#> # A tibble: 6 x 4
+#>   country      year cases  population
+#>   <chr>       <int> <chr>  <chr>     
+#> 1 Afghanistan  1999 745    19987071  
+#> 2 Afghanistan  2000 2666   20595360  
+#> 3 Brazil       1999 37737  172006362 
+#> 4 Brazil       2000 80488  174504898 
+#> 5 China        1999 212258 1272915272
+#> 6 China        2000 213766 1280428583
+
+table5 %>% 
+  unite(new, century, year, sep = "")
+  
+```
+
+#### 缺失值
+两种 一种已经显示NA 一种就是不显示出来
+complete 可以把不显示出来的显示为NA
+
+###整体流程
+```{r eval=FALSE, include=FALSE}
+#利用who的肺结核数据
+tidyr::who
+who %>%
+  pivot_longer(
+    cols = new_sp_m014:newrel_f65, 
+    names_to = "key", 
+    values_to = "cases", 
+    values_drop_na = TRUE
+  ) %>% 
+  mutate(
+    key = stringr::str_replace(key, "newrel", "new_rel")
+  ) %>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+
+```
 
