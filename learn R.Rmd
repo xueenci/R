@@ -634,6 +634,8 @@ table5 %>%
 complete 可以把不显示出来的显示为NA
 
 
+---
+
 ### 数据清理整体流程示例
 ```{r eval=FALSE, include=FALSE}
 #利用who的肺结核数据
@@ -657,6 +659,10 @@ names_to = "key",
   separate(sexage, c("sex", "age"), sep = 1)
 
 ```
+
+
+
+---
 
 ## 2.4 关系型数据（总体来讲有点像数据库的内容，不要忘了MYSQL的增删改查）
 多个table 之间有关系的数据叫关系型数据， 类似于SQL多个库，每张表之间有一定的关系，需要对这些表进行操作
@@ -694,6 +700,8 @@ flights2 <- flights %>%
   select(year:day, hour, origin, dest, tailnum, carrier)
 flights2
 ```
+
+---
 
 ###  数据表连接
 
@@ -799,6 +807,8 @@ semi_join(x, y) keeps all observations in x that have a match in y.
 
 anti_join(x, y) drops all observations in x that have a match in y.
 
+---
+
 ## 2.5 字符串操作  
 
 字符串操作用str_能自动补全很多
@@ -841,3 +851,52 @@ str_view(x, "apple")
 str_view(x, "^apple$") #锚定字符串首尾
 ```
 
+
+---
+
+###  data.table包
+
+相较于tidyverse更适合大数据应用,读取数据更快  
+分组计算方便，读取简单
+
+i,  
+j,  
+by  
+选择记录  
+
+
+```{r datatable,}
+
+
+
+
+# install.packages("data.table")
+library(data.table)
+
+NBA1920DT <- data.table(NBA1920)
+class(NBA1920)
+
+
+# 行记录选择
+dt1 <- NBA1920DT[grepl("A",Name)&Position=="C"]#grepl base里面的抓取函数
+head(dt1[,2:6])
+
+
+#列变量选择,一次性选择多个变量的时候，要用.()或者list()
+NBA1920DT[,.(GamesPlayedMean=mean(GamesPlayed),
+             PersonalFoulsMean=mean(PersonalFouls))]
+
+# ij配合使用
+NBA1920DT[GamesPlayed>70,.(ThreesMadeMean=mean(ThreesMade))]
+
+#分组依据by  .N 为记录数， 与n()一个意思
+dt3 <- NBA1920DT[,.(.N,
+                    AssistsMean=mean(Assists)),
+                 by=Team]
+head(dt3,15)
+
+d44 <- NBA1920DT[Position=="C",
+                 .(.N,ThreesAttemptedmean=mean(ThreesAttempted)),
+                 by=Team]
+
+```
