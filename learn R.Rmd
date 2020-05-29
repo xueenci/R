@@ -695,10 +695,11 @@ weather
 （其实可以有多个键）
 如果没有合适的主键 可以使用代理键 比如mutate新建一个键或者用row_number
 
-```{r eval=FALSE, include=FALSE}
+```{r 链接数据准备,eval=FALSE, include=FALSE}
 flights2 <- flights %>% 
   select(year:day, hour, origin, dest, tailnum, carrier)
 flights2
+
 ```
 
 ---
@@ -820,7 +821,7 @@ str_length("aaa")
 ```
 
 ####组合字符串
-```{r str_c,}
+```{r 组合折叠字符串,}
 str_c("x","y")
 
 str_c("x","y",sep=",")
@@ -900,3 +901,178 @@ d44 <- NBA1920DT[Position=="C",
                  by=Team]
 
 ```
+
+
+##### 检测匹配
+
+```{r 检测匹配,}
+
+
+x <- c("apple", "banana", "pear")
+str_detect(x, "e")
+
+```
+
+##### 分组匹配
+
+
+字符串的操作感觉平时用的比较少，没有认真记笔记，后面需要的时候再看  
+
+[**字符串**](https://r4ds.had.co.nz/strings.html#stringi)
+
+## 2.6 因子(也不完全等同于分类变量it’s an anagram of factors!)
+
+baseR 里面很多函数都是自动把字符串的转变成文本的  
+tidyverse里面没有这个问题
+
+可以参考：
+[ Wrangling categorical data in R](https://peerj.com/preprints/3163/)
+
+```{r }
+x1 <- c("Dec", "Apr", "Jan", "Mar")
+
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+)
+
+y1 <- factor(x1, levels = month_levels)
+y1
+
+
+```
+
+
+```{r 因子示例,}
+forcats::gss_cat
+
+gss_cat%>%
+  count(race)
+
+ggplot(gss_cat) +
+  geom_bar(aes(x=race))+
+  scale_x_discrete(drop=F)#不舍去空值
+
+ggplot(relig_summary, aes(tvhours, fct_reorder(relig, tvhours))) +
+  geom_point()
+
+
+```
+
+
+
+用fct_reorder()可以对因子重新排序作图
+
+比如有些情况想按照递增然后不知道的放最后这种
+
+
+```{r 因子排序问题,}
+relig_summary <- gss_cat %>%
+  group_by(relig) %>%
+  summarise(
+    age = mean(age, na.rm = TRUE),
+    tvhours = mean(tvhours, na.rm = TRUE),
+    n = n()
+  )
+
+ggplot(relig_summary, aes(tvhours, relig)) + geom_point()
+
+
+
+by_age <- gss_cat %>%
+  filter(!is.na(age)) %>%
+  count(age, marital) %>%
+  group_by(age) %>%
+  mutate(prop = n / sum(n))
+
+ggplot(by_age, aes(age, prop, colour = marital)) +
+  geom_line(na.rm = TRUE)#no answer在前
+
+
+ggplot(by_age, aes(age, prop, colour = fct_reorder2(marital, age, prop))) +
+  geom_line() +
+  labs(colour = "marital")#按照百分比排序
+
+
+```
+
+
+## 2.7日期和时间
+
+lubridate包
+
+```{r 日期和时间,}
+
+library(lubridate)
+
+now()
+
+
+```
+
+### 创建日期和时间
+
+#### 从字符串创建
+
+```{r 从字符串创建,}
+ymd("2017-01-31")
+
+mdy("January 31st, 2017")
+
+dmy("31-Jan-2017")
+
+ymd(20170131)
+```
+
+#### 从独立元素创建
+make_date  
+make_datetime
+
+```{r 从独立元素创建,}
+
+library(nycflights13)
+flights %>%
+  select(year,month,day,hour, minute)%>%
+  mutate(departure=make_datetime(year,month,day,hour,minute))
+
+```
+
+
+#### 从其他元素创建
+as_datetime(today())
+
+as_date(now())
+
+
+### date-time 元素
+
+```{r 提取年、月、日元素,}
+datetime <- ymd_hms("2016-07-08 12:34:56")
+year(datetime)
+month(datetime)
+mday(datetime)
+
+```
+
+```{r 取整, eval=FALSE, include=FALSE}
+flights_dt %>% 
+  count(week = floor_date(dep_time, "week")) %>% 
+  ggplot(aes(week, n)) +
+    geom_line()
+```
+
+
+### 时间跨度
+
+####  持续时间 
+
+```{r 时间计算,}
+my_age <- today()-ymd(19960420)
+my_age
+as.duration(my_age)
+
+
+```
+
+
+#  3.编程
