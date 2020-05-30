@@ -15,6 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 # R for data science 学习笔记
 # [参考图书](https://r4ds.had.co.nz/data-visualisation.html#coordinate-systems)
 
+---
+
+
 # 1. 探索数据
 ## 1.1 可视化
 ```{r load packages, include=FALSE}
@@ -305,7 +308,7 @@ n_distinct()代表不重复的记录数
 
 ```{r 分组, eval=FALSE, include=FALSE}
 by_day <- group_by(flights, year, month, day)
-summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+summarise(by_day, delay = mean(dep_delay,))
 
 
 sum1 <-summarise(NBA1920,nPlayer=n(),nTeam=n_distinct(Team),nPosition=n_distinct(Position))
@@ -322,8 +325,8 @@ sum1
 by_dest <- group_by(flights, dest)
 delay <- summarise(by_dest,
   count = n(),
-  dist = mean(distance, na.rm = TRUE),
-  delay = mean(arr_delay, na.rm = TRUE)
+  dist = mean(distance,),
+  delay = mean(arr_delay,)
 )
 delay <- filter(delay, count > 20, dest != "HNL")
 
@@ -452,6 +455,11 @@ diamonds2 <- diamonds %>%
 ggplot(data = diamonds2) + 
   geom_point(mapping = aes(x = carat, y = resid))
 ```
+
+
+---
+
+
 
 # 2. 处理数据，数据清理 data wrangle
 
@@ -920,7 +928,7 @@ str_detect(x, "e")
 
 [**字符串**](https://r4ds.had.co.nz/strings.html#stringi)
 
-## 2.6 因子(也不完全等同于分类变量it’s an anagram of factors!)
+## 2.6 因子(等同于分类变量it’s an anagram of factors!)
 
 baseR 里面很多函数都是自动把字符串的转变成文本的  
 tidyverse里面没有这个问题
@@ -970,8 +978,8 @@ ggplot(relig_summary, aes(tvhours, fct_reorder(relig, tvhours))) +
 relig_summary <- gss_cat %>%
   group_by(relig) %>%
   summarise(
-    age = mean(age, na.rm = TRUE),
-    tvhours = mean(tvhours, na.rm = TRUE),
+    age = mean(age,),
+    tvhours = mean(tvhours,),
     n = n()
   )
 
@@ -986,7 +994,7 @@ by_age <- gss_cat %>%
   mutate(prop = n / sum(n))
 
 ggplot(by_age, aes(age, prop, colour = marital)) +
-  geom_line(na.rm = TRUE)#no answer在前
+  geom_line#no answer在前
 
 
 ggplot(by_age, aes(age, prop, colour = fct_reorder2(marital, age, prop))) +
@@ -1074,5 +1082,108 @@ as.duration(my_age)
 
 ```
 
+---
+
 
 #  3.编程
+
+如果有编程经验可以看
+[advanced R](http://adv-r.had.co.nz.)
+
+
+## 3.1管道
+
+适用于线性长步骤（十步以内），一步接一步的
+
+```{r 管道caozuo,eval=FALSE, include=FALSE}
+foo_foo <- hop(foo_foo, through = forest)
+foo_foo <- scoop(foo_foo, up = field_mice)
+foo_foo <- bop(foo_foo, on = head)
+
+foo_foo %>%
+  hop(through = forest) %>%
+  scoop(up = field_mice) %>%
+  bop(on = head)
+
+```
+
+用的不多的其他管道操作（了解一下）
+
+```{r 其他管道操作, eval=FALSE, include=FALSE}
+
+rnorm(100) %>%
+  matrix(ncol = 2) %>%
+  plot() %>%
+  str()
+
+
+
+rnorm(100) %>%
+  matrix(ncol = 2) %T>% #不要左边
+  plot() %>%
+  str()r
+```
+
+## 3.2函数
+
+**写好函数是一生的学习过程**
+
+**Writing good functions is a lifetime journey.** 
+
+如果复制粘贴两次以上就可以考虑写一个函数来代替重复性工作
+
+用R写函数
+f1 <-function(x){
+rng<-range(x,na.rm=T)
+(x-rng[1])/(rng[2]-rng[1])
+}
+f1(c(0,5,10))
+
+形参放在function()里面，然后紧接着花括号
+
+不要忘了其他语言的，我还是喜欢写python的函数
+```{python python函数,}
+def f1(x1,x2):
+  s=x1+x2
+  return(s)
+
+f1(2,3)
+```
+
+
+```{r rif语句, eval=FALSE, include=FALSE}
+if (condition) {
+  # code executed when condition is TRUE
+} else {
+  # code executed when condition is FALSE
+}
+
+```
+
+```{pyrhon python if语句, eval=FALSE, include=FALSE}
+if contion:
+   # code executed when condition is TRUE
+else:
+  # code executed when condition is FALSE
+
+```
+
+
+## 3.3向量（向量化）
+
+6中原向量+列表  
+原向量logical, integer, double, character, complex, and raw.
+
+列表里面可以是不同质的  
+向量必须是同质的  
+
+is.xx()查看是否是
+
+R中很多向量化的操作也会自动补齐，和Numpy一样
+
+
+as.xx()转化为xx
+
+
+str()可以用来查看列表的结构
+
