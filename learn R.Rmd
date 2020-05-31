@@ -1187,3 +1187,83 @@ as.xx()转化为xx
 
 str()可以用来查看列表的结构
 
+
+## 3.3 循环
+
+直接用c()来代表向量的话，比较占用空间，会变慢，所以一般是先创建一个新的向量，vector("类型“，“长度”)
+
+seq_along是length()更为安全的版本，这个可以有0个长度
+
+用[[i]]来遍历比[i]更普遍
+for (i in seq_along(xs)), and extracting the value with x[[i]]
+
+```{r 循环, eval=FALSE, include=FALSE}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+
+output <- vector("double", ncol(df))  # 1. output
+for (i in seq_along(df)) {            # 2. sequence
+  output[[i]] <- median(df[[i]])      # 3. body
+}
+
+```
+
+迭代的数字索引是最普遍的形式，因为给定的位置，你可以提取名称和值
+
+```{r fornames, eval=FALSE, include=FALSE}
+for (i in seq_along(x)) {
+  name <- names(x)[[i]]
+  value <- x[[i]]
+}
+```
+
+每一个for循环都可以改写成while循环，但while不能都改成for
+
+for (i in seq_along(x)) {
+  # body
+}
+
+Equivalent to
+
+i <- 1
+while (i <= length(x)) {
+  # body
+  i <- i + 1 
+}
+
+---
+
+R主要 还是功能性的编程语言，很多底层的编写其实不太合适。 
+
+**将一个函数传递给另一个函数的想法是一个非常强大的想法，它是使R成为函数式编程语言的行为之一**
+
+R base里面有apply lapply tapply 适用于循环
+
+
+**map函数族可以代替for函数，（其实底层是C语言写的，更快一些）**
+```{r map函数族,}
+
+map_dbl(df, mean)
+
+z <- list(x = 1:3, y = 4:5)
+map_int(z, length)
+map(z, length)
+
+models <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(function(df) lm(mpg ~ wt, data = df))
+
+models %>% 
+  map(summary) %>% 
+  map_dbl("r.squared")
+
+```
+
+
+
+
