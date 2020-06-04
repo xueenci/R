@@ -7,6 +7,12 @@ output:
   word_document: default
 ---
 
+> 发现两个超级好用的快捷键
+>> Insert chunk (Sweave and Knitr)	Ctrl+Alt+I 添加代码块
+>> Insert pipe operator	Ctrl+Shift+M 添加管道符
+> RStudio 里面也可以装miniconda,这样我就可以愉快地写python代码了
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -17,10 +23,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ---
 
-
 # 1. 探索数据
 ## 1.1 可视化
-```{r load packages, include=FALSE}
+```{r load packages, echo=TRUE}
 library(tidyverse)
 ```
 
@@ -29,23 +34,26 @@ library(tidyverse)
 * geom
 * facet
 
-```{r 使用模板, echo=TRUE}
-# ggplot(data = <DATA>) + 
-#   <GEOM_FUNCTION>(
-#      mapping = aes(<MAPPINGS>),
-#      stat = <STAT>, 
-#      position = <POSITION>
-#   ) +
-#   <COORDINATE_FUNCTION> +
-#   <FACET_FUNCTION>
+> ggplot使用模板
+>> ggplot(data = <DATA>) + 
+>>   <GEOM_FUNCTION>(
+>>      mapping = aes(<MAPPINGS>),
+>>      stat = <STAT>, 
+>>      position = <POSITION>
+>>   ) +
+>>   <COORDINATE_FUNCTION> +
+>>   <FACET_FUNCTION>
 
-```
 
 
 #### 美学特征 aes
 
+    ![图点类型](https://d33wubrfki0l68.cloudfront.net/58a48d625b4bd494cd685dd9998f5c74e9c16907/211c6/visualize_files/figure-html/shapes-1.png)
 
-   * ![图点类型](https://d33wubrfki0l68.cloudfront.net/58a48d625b4bd494cd685dd9998f5c74e9c16907/211c6/visualize_files/figure-html/shapes-1.png)
+
+数据的维度不仅可以有value,还可以有level
+
+比如不同种类的不同值，这个不同种类可以用不同形状或者不同颜色、不同大小对level进行区分。
 
 ```{r 美学特征aes, echo=TRUE}
 ggplot(data=mpg)+
@@ -89,6 +97,7 @@ ggplot(data = mpg) +
 
 ```
 
+
 #### 分面 facets_wrap
 
 ```{r 分面, echo=TRUE}
@@ -122,9 +131,11 @@ ggplot(data = mpg) +
 ```
 
 #### 图形对象 geom
+
 Geometric objects geom就是这个的缩写  
 
 #### stat 要描述的统计量，如果是一个分类变量，Y轴肯定要有相应的统计量，比如条形图默认的是stat=(count) 也可以改成prop
+
 ```{r 图形对象, echo=TRUE}
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))#散点图
@@ -135,6 +146,7 @@ ggplot(data = mpg) +
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))+
   geom_smooth(mapping = aes(x = displ, y = hwy,linetype=drv))#添加拟合曲线图层
+
 ggplot(data=mpg)+  
   geom_smooth(mapping = aes(x = displ, y = hwy,colour=drv))#添加拟合曲线图层
 
@@ -151,6 +163,7 @@ ggplot(data = diamonds) +
 #当以分类变量作为Fill的时候，有三个位置可以选择，identity（堆叠） dodge,合并， fill 填充满
 
 ```
+
 
 #### 坐标系 coord
 
@@ -178,8 +191,11 @@ bar + coord_polar()
 ```
 
 
-## 1.2数据转换
+## 1.2数据转换（初）
 ### 学习dplyr 清理数据
+
+**都是非常常用的操作**
+
 - filter 
 - arrange
 - select 
@@ -187,37 +203,49 @@ bar + coord_polar()
 - summarise
 - group_by
 
-#### 筛选
-```{r 筛选, eval=FALSE, include=FALSE}
-install.packages("nycflights13")
+#### 筛选 filter
+
+filter(flights,month==1,day==1)#(数据集，筛选条件)
+
+```{r 筛选, echo=TRUE}
+# install.packages("nycflights13")
 library(nycflights13)
 library(tidyverse)
 flights
 #filter
 jan1 <- filter(flights,month==1,day==1)#(数据集，筛选条件)
-hea
+head(jan1)
 
 ```
-逻辑符号  
-&和  
-|或  
-!非  
-%in% 后面可以跟向量 %in%c( ),也可以把字符型的放在里面
 
-#### 缺失值
+
+> 逻辑符号  
+>> &和  
+>> |或  
+>> !非  
+>> %in% 后面可以跟向量 %in%c( ),也可以把字符型的放在里面
+
+
+#### 缺失值 is.na
+
 is.na()  
 sum(is.na())  
 drop_na(x,value)  
 
-#### arrange排序
-arrange(flights,year,month,year)#默认升序，desc()改为降序
-```{r 排序, eval=FALSE, message=FALSE, warning=TRUE, include=FALSE, paged.print=FALSE}
+#### 排序 arrange
+
+arrange(flights,year,month,year)#默认升序，desc()改为降序,简便操作降序可以直接用“-”加变量
+
+```{r 排序, echo=TRUE, message=FALSE, warning=TRUE, paged.print=FALSE}
 arrange(flights,year,month,year)
 #NA永远在最后
+flights %>% 
+  arrange(-sched_dep_time)
 
 ```
 
 #### 选择变量  select
+
 select(flight,year,month,day)
 
 starts_with("abc)选择以abc开头的变量
@@ -229,18 +257,22 @@ contains（“abc”）选择名称中包含abc的变量
 matches （）正则匹配选择相应的变量
 
 num_range（“x”,1:3) 匹配选择x1 x2 x3
-```{r 选择变量, eval=FALSE, include=FALSE}
-select(flights,year,month,year)
 
-select(flights, year:day)# Select all columns between year and day (inclusive)
+```{r 选择变量, echo=TRUE}
+library(dplyr)
+select(flights, year, month, day)
+select(flights, year, month, day)
+select(flights,year:day)# Select all columns between year and day (inclusive)
+
 select(flights, -(year:day))# Select all columns except those from year to day (inclusive)
 
 ```
 
 
+*RICE week2 老师讲解 数据处理*
 
 
-```{r NBA数据示例,}
+```{r NBA数据示例, echo=TRUE}
 library(SportsAnalytics)
 NBA1920<- fetch_NBAPlayerStatistics("19-20") 
 select1 <- select(NBA1920,Name,starts_with("Three"),ends_with("Made"))#start_with 和end_with之间的逗号是或者的意思以three开头以made结尾
@@ -262,22 +294,32 @@ filter3 <- filter(NBA1920,ThreesMade/ThreesAttempted>0.7&GamesPlayed>3)
 head(filter3)
 
 
-
-
-
 ```
 
 
 
-#### 重命名
-```{r 重命名, eval=FALSE, include=FALSE}
-rename(flights,tail_num=tail_num)#新名字=旧名字
+#### 重命名变量 rename
+
+```{r 重命名, echo=TRUE}
+flights
+rename(flights,day=day)#新名字=旧名字
 
 ```
 
-#### 添加新变量
-```{r 添加新变量, eval=FALSE, include=FALSE}
+
+#### 添加新变量 mutate
+
+mutate 数据变换产生新变量，产生新的列
+
+> 数学运算
+>> %/% 整除取整
+>> %% 取余数
+>> log() log2() log10()
+>> 连加 连乘 cumsum(), cumprod(), cummin(), cummax()
+
+```{r 添加新变量, echo=TRUE}
 #mutate 数据变换产生新变量，产生新的列
+
 flights_sml <- select(flights, 
   year:day, 
   ends_with("delay"), 
@@ -291,12 +333,6 @@ mutate(flights_sml,
 
 #transmute 产生新变量，并且只保留新变量
 
-#数学运算
-#%/% 整除取整
-#%% 取余数
-# log() log2() log10()
-#连加 连乘 cumsum(), cumprod(), cummin(), cummax()
-
 ```
 
 #### 分组和总数
@@ -305,8 +341,9 @@ n()代表记录数
 
 n_distinct()代表不重复的记录数
 
+可以对不同性别之类的分别统计数据等等
 
-```{r 分组, eval=FALSE, include=FALSE}
+```{r 分组, echo=TRUE}
 by_day <- group_by(flights, year, month, day)
 summarise(by_day, delay = mean(dep_delay,))
 
@@ -319,9 +356,14 @@ sum1
 ```
 
 #### 管道操作
+
 主要是为了减少中间变量的命名，缩短代码长度，相当于:用上一步产生的数据然后...（用这个数据然后...）
 
-```{r 管道操作, eval=FALSE, include=FALSE}
+个人感觉这个是越用越上瘾的操作
+
+ctrl+shift+M 快捷键 %>% 
+
+```{r 管道操作, echo=TRUE}
 by_dest <- group_by(flights, dest)
 delay <- summarise(by_dest,
   count = n(),
@@ -343,25 +385,68 @@ delays <- flights%>%
 # n_distinct(x)#去重后的
 
 ```
+
 #### count计数 
+
 很有用
+count()
+
+
+#### 变量重编码
+
+- 1.逻辑判断 ifelse语句 
+- 2.分段 cut语句
+- 3. car包里面的recode语句
+
+car程序包的recode函数可以将数值或者字符向量、factor变量重新编码。
+
+基本语法：recode(x,recodes,as.factor.result,levels)
+
+其中：
+
+x为数值向量，字符向量或者factor 变量。
+recode为设定重新编码规则的字符串。
+as.factor.result为是否输出factor变量。若是则为TRUE，不是为FALSE。
+levels为排序向量。指定新的编码分组的顺序（默认是按照分组名称排序）
+
+##### ifelse 语句，ifelse(逻辑判断，是的值，否的值)
+
+ifelse 语句还是很有用的，
+比如在变量重新赋值的时候，如果怎样=1，否则=2，
+还可以嵌套ifelse 使用
+
+```{r ifelse语句,}
+set.seed(123)
+a <- rnorm(20)
+a
+a1 <- ifelse(a>0,1,0)
+a1
+
+a2 <- ifelse(a<0,0,ifelse(a>0.5,1,0.5))
+a2
+```
+
 
 ## 1.3探索性分析EDA
-先学会提出问题，在大量的问题中找到高质量的问题
+
+**先学会提出问题，在大量的问题中找到高质量的问题**
 
 变量是什么类型  
 协变量是什么类型
 
 变异：不同观测之间的差别，可以在分析之前先看变量的分布（可视化）
+
 ### 对于分类变量，可以使用比如条形图：
-```{r 分类变量条形图, echo=FALSE}
+
+```{r 分类变量条形图, echo=TRUE}
 ggplot(data=diamonds)+
   geom_bar(mapping=aes(x=cut))
 #底层默认是计数count
 ```
 
 ### 对于连续变量，可以使用直方图
-```{r 连续变量直方图,}
+
+```{r 连续变量直方图, echo=TRUE}
 ggplot(data=diamonds)+
   geom_histogram(mapping = aes(x=carat),binwidth = 0.5) #底层也是计数
 ggplot(data=diamonds)+
@@ -371,9 +456,12 @@ ggplot(data=diamonds)+
 #画多组直方图可以选择用线代替
 ggplot(data = diamonds, mapping = aes(x = carat, colour = cut)) +
   geom_freqpoly(binwidth = 0.1)
+
 ```
 
-```{r 设置坐标轴限制,}
+设置坐标轴限制 coord_cartesian
+
+```{r 设置坐标轴限制, echo=TRUE}
 #设置坐标轴限制
 ggplot(diamonds) + 
   geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
@@ -381,18 +469,19 @@ ggplot(diamonds) +
 ```
 
 
-#### ifelse 语句，ifelse(逻辑判断，是的值，否的值)
 
 ### 一个分类变量，一个连续变量，两变量之间的关系，分布，可以用厢式图
+
 ```{r 箱式图,}
 ggplot(data=diamonds)+
   geom_boxplot(mapping= aes(x=cut,y=price))
+
 ```
 
 
 #### reorder可以对分类变量重新排序，geom_boxplot(mapping=aes(x=reorder(class,hwy,FUN=median),y=hwy))+coord_flip
 
-```{r 一个分类变量，一个连续变量,}
+```{r 一个分类变量，一个连续变量, echo=TRUE}
 ggplot(data=diamonds)+
   geom_violin(mapping= aes(x=cut,y=price))
 
@@ -407,12 +496,16 @@ ggplot(data=diamonds)+
   geom_jitter(mapping=aes(x=cut,y=price))
 ```
 
+
 ### 两个分类变量， 对两个分类变量进行计数（有点类似于列联表）
+
 ```{r 两个分类变量,}
 ggplot(data=diamonds)+
   geom_count(mapping=aes(x=cut,y=color))
 
 ```
+
+
 ```{r 两个分类变量 瓷砖图,}
 diamonds %>% 
   count(color, cut) %>%  
@@ -425,8 +518,10 @@ diamonds %>%
 
 ```
 
+
 ### 两个连续变量 可以用散点图
-```{r 两个连续变量 散点图,}
+
+```{r 两个连续变量 散点图, echo=TRUE}
 ggplot(data=diamonds)+
   geom_point(mapping=aes(x=carat,y=price))
 
@@ -444,6 +539,7 @@ ggplot(data = diamonds) +
 ```
 
 ### 模型
+
 ```{r 模型,}
 library(modelr)
 
@@ -453,417 +549,28 @@ diamonds2 <- diamonds %>%
   mutate(resid = exp(resid))
 
 ggplot(data = diamonds2) + 
-  geom_point(mapping = aes(x = carat, y = resid))
+  geom_point(mapping = aes(x = carat, y = resid))#残差可视化
+
 ```
 
 
 ---
-
-
 
 # 2. 处理数据，数据清理 data wrangle
 
 数据工作的流程是：
 
-导入数据，整理数据，数据转化，可视化，模型，沟通  
+- 导入数据
+- 整理数据
+- 数据转化
+- 可视化
+- 模型
+- 沟通与发表  
 
 tidyr 取代了reshape和reshape2
 
-## 2.1 Tibble
 
-```{r 把 普通的data frame 转换成 tibble, eval=FALSE, include=FALSE, paged.print=FALSE}
-as_tibble(iris)
-
-tibble(
-  x=1:5,
-  y=1,#y可以自动补齐，类似于numpy
-  z=x^2+y
-)
-
-#也可以把tibble转换为data.frame
-as.data.frame(iris)
-```
-
-tibble不会自动把字符型转换为factor，不改变变量名，不创建行名
-
-```{r tribble, eval=FALSE, include=FALSE}
-tribble(
-  ~x, ~y, ~z,
-  #--|--|----
-  "a", 2, 3.6,
-  "b", 1, 8.5
-)
-
-#可以手动录入数据
-```
-tibble会自动打印前十行，会显示每个变量的类型
-
-
-## 2.2 数据导入
-
-最常用的是read.csv read.table (read_csv,read_table)
-
-```{r read_csv,}
-#read_csv 和read.csv 是不同的，read_csv可以手动录入数据
-# read_csV读取文件之后会自动显示每一列变量的类型
-#手动录入的话默认会把第一行当做列名
-read_csv("1,2,3\n4,5,6", col_names = FALSE)
-
-
-```
-
-
-```{r read_csv1,}
-read_csv("The first line of metadata
-  The second line of metadata
- x,y,z
-  1,2,3", skip = 2)#跳过前两行
-
-read_csv("# A comment I want to skip
-  x,y,z
-  1,2,3", comment = "#")#用#号做注释
-
-```
-
-read_csv和read.csv对比
-
-They are typically much faster (~10x) than their base equivalents. Long running jobs have a progress bar, so you can see what’s happening. If you’re looking for raw speed, try data.table::fread(). It doesn’t fit quite so well into the tidyverse, but it can be quite a bit faster.
-
-They produce tibbles, they don’t convert character vectors to factors, use row names, or munge the column names. These are common sources of frustration with the base R functions.
-
-They are more reproducible. Base R functions inherit some behaviour from your operating system and environment variables, so import code that works on your computer might not work on someone else’s.
-
-### 解析向量
-```{r 解析向量, eval=FALSE, include=FALSE}
-# parse_*()
-str(parse_logical(c("TRUE", "FALSE", "NA")))
-str(parse_integer(c("1", "2", "3")))
-str(parse_date(c("2010-01-01", "1979-10-14")))
-
-```
-
-
-#### 数字、字符串、时间、文件
-默认格式最好是UTF-8  
-guess_encoding(charToRaw(x2))  
-parse_datetime("2010-10-01T2010")  
-
-guess_parser(c("12,352,561")) 自动判断是什么类型的数据  
-
-haven reads SPSS, Stata, and SAS files.  
-
-readxl reads excel files (both .xls and .xlsx).  
-
-DBI, along with a database specific backend (e.g. RMySQL, RSQLite, RPostgreSQL etc) allows you to run SQL queries against a database and return a data frame.
-
-For hierarchical data: use jsonlite (by Jeroen Ooms) for json, and xml2 for XML. 
-
-
-### 输出文件
-```{r 输出文件, eval=FALSE, include=FALSE}
-write_csv(challenge, "challenge.csv")
-```
-feather包 可以输出二进制文件 .feather 
-
-
-## 2.3 整理数据
-
-### 长短格式转换  pivot_longer() and pivot_wider().
-
-```{r 转换成长格式,eval=FALSE, include=FALSE}
-table4a %>% 
-  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
-#> # A tibble: 6 x 3
-#>   country     year   cases
-#>   <chr>       <chr>  <int>
-#> 1 Afghanistan 1999     745
-#> 2 Afghanistan 2000    2666
-#> 3 Brazil      1999   37737
-#> 4 Brazil      2000   80488
-#> 5 China       1999  212258
-#> 6 China       2000  213766
-
-
-tidy4a <- table4a %>% 
-  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
-tidy4b <- table4b %>% 
-  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "population")
-left_join(tidy4a, tidy4b)# 左合并
-
-```
-
-
-### 长宽数据转换
-gather:宽转长
-
-相当于，重复测量数据中，一个人测了很多次，那每个人的名字就是key(有点类似于主键的意思),不同的测量就是vaule
-
-
-spread
-相当于，长型的重复测量数据中，一个人测了很多次，找到那个作为key的变量，然后把值分开为不同的测量
-
-
-```{r 长宽数据转换,}
-airquality
-airquality2 <- gather(data = airquality,key = Type,value = value,Ozone,Solar.R,Wind,Temp)
-airquality2
-
-#
-airquality3 <- spread(data = airquality2,key = Type,value=value)
-airquality3
-```
-
-
-### 分列和合并
-![分列](C:/Users/xueenci/Desktop/R/1.png)
-
-```{r 分列和合并, eval=FALSE, include=FALSE}
-table3 %>% 
-  separate(rate, into = c("cases", "population"))
-#可以指定分隔符
-  separate(rate, into = c("cases", "population"), sep = "/")
-#> # A tibble: 6 x 4
-#>   country      year cases  population
-#>   <chr>       <int> <chr>  <chr>     
-#> 1 Afghanistan  1999 745    19987071  
-#> 2 Afghanistan  2000 2666   20595360  
-#> 3 Brazil       1999 37737  172006362 
-#> 4 Brazil       2000 80488  174504898 
-#> 5 China        1999 212258 1272915272
-#> 6 China        2000 213766 1280428583
-
-table5 %>% 
-  unite(new, century, year, sep = "")
-  
-```
-
-### 缺失值
-两种 一种已经显示NA 一种就是不显示出来
-complete 可以把不显示出来的显示为NA
-
-
----
-
-### 数据清理整体流程示例
-```{r eval=FALSE, include=FALSE}
-#利用who的肺结核数据
-tidyr::who
-who %>%
-  pivot_longer(
-    cols = new_sp_m014:newrel_f65,
-```
-
-
-```{r eval=FALSE, include=FALSE}
-names_to = "key", 
-    values_to = "cases", 
-    values_drop_na = TRUE
-  ) %>% 
-  mutate(
-    key = stringr::str_replace(key, "newrel", "new_rel")
-  ) %>%
-  separate(key, c("new", "var", "sexage")) %>% 
-  select(-new, -iso2, -iso3) %>% 
-  separate(sexage, c("sex", "age"), sep = 1)
-
-```
-
-
-
----
-
-## 2.4 关系型数据（总体来讲有点像数据库的内容，不要忘了MYSQL的增删改查）
-多个table 之间有关系的数据叫关系型数据， 类似于SQL多个库，每张表之间有一定的关系，需要对这些表进行操作
-
-总的来说三种关联:  
-- Mutating joins  
-向另一个表中匹配的观测添加新变量，也就是对应到个体增加新的变量（相当于筛选变量）
-- Filtering joins  
-基于另一张表是否和这张表的观测匹配来筛选数据，比如两年随访两张表，在第二年中选取第一年随访过的 (相当于筛选观测)
-- Set operations  
-集合操作，它将观察值视为集合元素。
-
-
-### mutation joins
-```{r 关系型数据导入准备, eval=FALSE, include=FALSE}
-library(tidyverse)
-library(nycflights13)
-
-#这个包，包含了关于飞行数据的四张表。
-airlines
-airports
-planes
-weather
-```
-
-##### keys
-键：关联两张表的数据（两张表联系起来的关键变量）两种
--  主键： 唯一识别本表中的值
--  外键：唯一识别另外一个表的值
-（其实可以有多个键）
-如果没有合适的主键 可以使用代理键 比如mutate新建一个键或者用row_number
-
-```{r 链接数据准备,eval=FALSE, include=FALSE}
-flights2 <- flights %>% 
-  select(year:day, hour, origin, dest, tailnum, carrier)
-flights2
-
-```
-
----
-
-###  数据表连接
-
-
-
-```{r 理解数据库连接, eval=FALSE, include=FALSE}
-#示例数据
-x <- tribble(
-  ~key, ~val_x,
-     1, "x1",
-     2, "x2",
-     3, "x3"
-)
-y <- tribble(
-  ~key, ~val_y,
-     1, "y1",
-     2, "y2",
-     4, "y3"
-)
-
-```
-
-#### 内连接
-
-![内连接示意图](C:/Users/xueenci/Desktop/R/3.png)
-
-```{r 内连接 inner join, eval=FALSE, include=FALSE}
-x%>%
-  inner_join(y,by="key")
-# 合并具有相同key的值，输出结果
-#没有匹配到的Key不会输出，有点类似于求交集，两个都有的key，把value合并输出到一个新的数据集
-
-```
-
-#### 外连接
-
-![三种外连接图例](C:/Users/xueenci/Desktop/R/2.png)
-
-##### 左连接
-以左表为主表，保留左表所有的记录。在右表中寻找一个key的值合并，没有的记为空，而右表中没对应上的key则直接舍去
-
-
-```{r 左连接, eval=FALSE, include=FALSE}
-
-flights2 %>%
-  select(-origin, -dest) %>% 
-  left_join(airlines, by = "carrier")
-```
-
-##### 右连接
-以右表为主表，保留右表所有的记录。在左表中寻找一个key的值合并，没有的记为空，而左表中没对应上的key则直接舍去
-
-```{r 右连接, eval=FALSE, include=FALSE}
-flights2%>%
-  select(-origin,-dest)%>%
-  right_join(airlines,by="carrier")
-
-```
-
-
-##### 全连接
-两个表所有的记录都保留，没有匹配上的当作是空值
-
-```{r 全连接, eval=FALSE, include=FALSE}
-flights2%>%
-  full_join(airlines,by="carrier")
-
-```
-
-#### 当一个表有重复的键的时候，重复的键对应匹配多次
-
-![当一个表有重复的键的时候](C:/Users/xueenci/Desktop/R/4.png)
-
-
-#### 当多个表都有重复的键的时候，重复的键排列组合，都会放入新的表中
-
-
-![当多个表有重复的键的时候](C:/Users/xueenci/Desktop/R/5.png)
-
-by如果为NULL则匹配所有相同的变量
-
-
-与基础merge函数可以实现一样的功能
-|dplyr  |merge|
-|-------------- | -------:  |:----:|
-|inner_join(x, y)	| merge(x, y)|
-|left_join(x, y)	  | merge(x, y, all.x = TRUE)|
-|right_join(x, y)	 | merge(x, y, all.y = TRUE) |
-|full_join(x, y)	  | merge(x, y, all.x = TRUE, all.y = TRUE)|
-
-与SQL语言也可以有一样的效果
-|dplyr    | sql |
-|----------    | ---------: |:--------:|
-|inner_join(x, y, by = "z")	| SELECT * FROM x INNER JOIN y USING (z)|
-|left_join(x, y, by = "z")	| SELECT * FROM x LEFT OUTER JOIN y USING (z)|
-|right_join(x, y, by = "z")	| SELECT * FROM x RIGHT OUTER JOIN y USING (z)|
-|full_join(x, y, by = "z")	| SELECT * FROM x FULL OUTER JOIN y USING (z)|
-
-
-### fileter joins
-
-semi_join(x, y) keeps all observations in x that have a match in y.  
-
-anti_join(x, y) drops all observations in x that have a match in y.
-
----
-
-## 2.5 字符串操作  
-
-字符串操作用str_能自动补全很多
-
-```{r 字符串长度,}
-length("aaa")
-str_length("aaa")
-
-```
-
-####组合字符串
-```{r 组合折叠字符串,}
-str_c("x","y")
-
-str_c("x","y",sep=",")
-
-# 把一个向量折叠成一个字符串
-str_c(c("x", "y", "z"), collapse = ", ")
-
-```
-
-#### 替换字符串
-
-### 正则表达式
-
-#####  .代表同一行任意一个字符，如果本身就想找"."那就要用\\.
-
-##### 锚定一个字符的首尾，if you begin with power (^), you end up with money ($).
-```{r 正则表达式}
-x <- c("apple", "banana", "pear")
-str_view(x, "an")
-
-str_view(x, ".a.")
-
-
-x <- c("apple pie", "apple", "apple cake")
-str_view(x, "apple")
-
-
-str_view(x, "^apple$") #锚定字符串首尾
-```
-
-
----
-
-###  data.table包
+> data.table包
 
 相较于tidyverse更适合大数据应用,读取数据更快  
 分组计算方便，读取简单
@@ -873,11 +580,7 @@ j,
 by  
 选择记录  
 
-
 ```{r datatable,}
-
-
-
 
 # install.packages("data.table")
 library(data.table)
@@ -910,11 +613,461 @@ d44 <- NBA1920DT[Position=="C",
 
 ```
 
+## 2.1 Tibble
+
+```{r 把 普通的data frame 转换成 tibble, echo=TRUE, paged.print=FALSE}
+as_tibble(iris)
+
+tibble(
+  x=1:5,
+  y=1,#y可以自动补齐，类似于numpy
+  z=x^2+y
+)
+
+#也可以把tibble转换为data.frame
+# as.data.frame(iris)
+```
+
+
+**tibble不会自动把字符型转换为factor，不改变变量名，不创建行名，tibble会自动打印前十行，会显示每个变量的类型**
+
+
+```{r tribble, echo=TRUE}
+tribble(
+  ~x, ~y, ~z,
+  #--|--|----
+  "a", 2, 3.6,
+  "b", 1, 8.5
+)
+
+#可以手动录入数据
+```
+
+
+## 2.2 数据导入
+
+最常用的是read.csv read.table (read_csv,read_table)
+
+read_csv和read.csv 是不同的，read_csv可以手动录入数据
+
+read_csV读取文件之后会自动显示每一列变量的类型
+
+手动录入的话默认会把第一行当做列名
+
+```{r read_csv,}
+#read_csv 和read.csv 是不同的，read_csv可以手动录入数据
+# read_csV读取文件之后会自动显示每一列变量的类型
+#手动录入的话默认会把第一行当做列名
+read_csv("1,2,3\n4,5,6", col_names = FALSE)
+
+
+```
+
+
+```{r read_csv1,}
+read_csv("The first line of metadata
+  The second line of metadata
+ x,y,z
+  1,2,3", skip = 2)#跳过前两行
+
+read_csv("# A comment I want to skip
+  x,y,z
+  1,2,3", comment = "#")#用#号做注释
+
+```
+
+> read_csv和read.csv对比
+
+>> They are typically much faster (~10x) than their base equivalents. Long running jobs have a progress bar, so you can see what’s happening. If you’re looking for raw speed, try data.table::fread(). It doesn’t fit quite so well into the tidyverse, but it can be quite a bit faster.
+
+>> They produce tibbles, they don’t convert character vectors to factors, use row names, or munge the column names. These are common sources of frustration with the base R functions.
+
+>> They are more reproducible. Base R functions inherit some behaviour from your operating system and environment variables, so import code that works on your computer might not work on someone else’s.
+
+### 解析向量
+
+```{r 解析向量, echo=TRUE}
+# parse_*()
+str(parse_logical(c("TRUE", "FALSE", "NA")))
+str(parse_integer(c("1", "2", "3")))
+str(parse_date(c("2010-01-01", "1979-10-14")))
+
+```
+
+
+#### 数字、字符串、时间、文件
+
+默认格式最好是UTF-8  
+
+guess_encoding(charToRaw(x2)) 
+
+parse_datetime("2010-10-01T2010")  
+
+guess_parser(c("12,352,561")) 自动判断是什么类型的数据  
+
+haven reads SPSS, Stata, and SAS files.  
+
+readxl reads excel files (both .xls and .xlsx).  
+
+DBI, along with a database specific backend (e.g. RMySQL, RSQLite, RPostgreSQL etc) allows you to run SQL queries against a database and return a data frame.
+
+For hierarchical data: use jsonlite (by Jeroen Ooms) for json, and xml2 for XML. 
+
+
+### 输出文件
+
+write_csv(challenge, "challenge.csv")
+
+```{r 输出文件, eval=FALSE, include=FALSE}
+write_csv(challenge, "challenge.csv")
+```
+
+feather包 可以输出二进制文件 .feather 
+
+
+## 2.3 整理数据
+
+### 长短格式转换  pivot_longer() and pivot_wider().
+
+更常用的还是gather和spread
+
+```{r 转换成长格式, echo=TRUE}
+table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+#> # A tibble: 6 x 3
+#>   country     year   cases
+#>   <chr>       <chr>  <int>
+#> 1 Afghanistan 1999     745
+#> 2 Afghanistan 2000    2666
+#> 3 Brazil      1999   37737
+#> 4 Brazil      2000   80488
+#> 5 China       1999  212258
+#> 6 China       2000  213766
+
+
+tidy4a <- table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+tidy4b <- table4b %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "population")
+left_join(tidy4a, tidy4b)# 左合并
+
+```
+
+
+### 长宽数据转换
+
+**这个操作是很常用的**
+
+gather:宽转长
+
+相当于，重复测量数据中，一个人测了很多次，那每个人的名字就是key(有点类似于主键的意思),不同的测量就是vaule
+
+
+spread
+相当于，长型的重复测量数据中，一个人测了很多次，找到那个作为key的变量，然后把值分开为不同的测量
+
+
+```{r 长宽数据转换, echo=TRUE}
+airquality
+airquality2 <- gather(data = airquality,key = Type,value = value,Ozone,Solar.R,Wind,Temp)
+airquality2
+
+#
+airquality3 <- spread(data = airquality2,key = Type,value=value)
+airquality3
+```
+
+
+### 分列和合并
+
+![分列](C:/Users/xueenci/Desktop/R/1.png)
+
+```{r 分列和合并, echo=TRUE}
+# table3 %>% 
+#   separate(rate, into = c("cases", "population"))
+# #可以指定分隔符
+#   separate(rate, into = c("cases", "population"), sep = "/")
+# #> # A tibble: 6 x 4
+# #>   country      year cases  population
+# #>   <chr>       <int> <chr>  <chr>     
+# #> 1 Afghanistan  1999 745    19987071  
+# #> 2 Afghanistan  2000 2666   20595360  
+# #> 3 Brazil       1999 37737  172006362 
+# #> 4 Brazil       2000 80488  174504898 
+# #> 5 China        1999 212258 1272915272
+# #> 6 China        2000 213766 1280428583
+# 
+# table5 %>% 
+#   unite(new, century, year, sep = "")
+  
+```
+
+### 缺失值
+
+两种：
+
+一种已经显示NA 
+
+一种就是不显示出来
+
+complete 可以把不显示出来的显示为NA
+
+
+### 数据清理整体流程示例
+
+
+```{r who的肺结核数据, echo=TRUE}
+#利用who的肺结核数据
+tidyr::who
+
+```
+
+
+```{r who的肺结核数据示例, echo=TRUE}
+who %>%
+  pivot_longer(
+    cols = new_sp_m014:newrel_f65,
+    names_to = "key", 
+    values_to = "cases", 
+    values_drop_na = TRUE
+  )%>% 
+  mutate(
+    key = stringr::str_replace(key, "newrel", "new_rel")
+  ) %>%
+  separate(key, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+
+```
+
+
+
+## 2.4 关系型数据（总体来讲有点像数据库的内容，不要忘了MYSQL的增删改查）
+
+多个table 之间有关系的数据叫关系型数据，
+类似于SQL多个库，每张表之间有一定的关系，需要对这些表进行操作
+
+总的来说三种关联:  
+
+- Mutating joins  
+向另一个表中匹配的观测添加新变量，也就是对应到个体增加新的变量比如两年随访两张表，在第二年中选取第一年随访过的变量（相当于筛选变量）
+
+- Filtering joins  
+基于另一张表是否和这张表的观测匹配来筛选数据，比如两年随访两张表，在第二年中选取第一年随访过的人 (相当于筛选观测)
+
+- Set operations  
+集合操作，它将观察值视为集合元素。
+
+
+### mutation joins
+
+```{r 关系型数据导入准备, echo=TRUE}
+library(tidyverse)
+library(nycflights13)
+
+#这个包，包含了关于飞行数据的四张表。
+airlines
+airports
+planes
+weather
+
+```
+
+##### keys
+
+键：关联两张表的数据（两张表联系起来的关键变量）两种
+
+-  主键：唯一识别本表中的值
+
+-  外键：唯一识别另外一个表的值
+（其实可以有多个键）
+
+如果没有合适的主键 可以使用代理键
+比如mutate新建一个键或者用row_number
+
+
+```{r 链接数据准备, echo=TRUE}
+flights2 <- flights %>% 
+  select(year:day, hour, origin, dest, tailnum, carrier)
+flights2
+
+```
+
+
+###  数据表连接
+
+
+```{r 理解数据库连接, echo=TRUE}
+#示例数据
+x <- tribble(
+  ~key, ~val_x,
+     1, "x1",
+     2, "x2",
+     3, "x3"
+)
+y <- tribble(
+  ~key, ~val_y,
+     1, "y1",
+     2, "y2",
+     4, "y3"
+)
+x
+y
+```
+
+
+
+#### 内连接
+
+![内连接示意图](C:/Users/xueenci/Desktop/R/3.png)
+
+
+
+```{r 内连接 inner join, echo=TRUE}
+x%>%
+  inner_join(y,by="key")
+# 合并具有相同key的值，输出结果
+#没有匹配到的Key不会输出，有点类似于求交集，两个都有的key，把value合并输出到一个新的数据集
+
+```
+
+
+#### 外连接
+
+![三种外连接图例](C:/Users/xueenci/Desktop/R/2.png)
+
+
+##### 左连接
+
+以左表为主表，保留左表所有的$\color{#FF0000}{变量}$。在右表中寻找一个key的值合并，没有的记为空，而右表中没对应上的key则直接舍去
+
+
+```{r 左连接, echo=TRUE}
+
+flights2 %>%
+  select(-origin, -dest) %>% 
+  left_join(airlines, by = "carrier")
+```
+
+##### 右连接
+
+以右表为主表，保留右表所有的$\color{#FF0000}{变量}$。在左表中寻找一个key的值合并，没有的记为空，而左表中没对应上的key则直接舍去
+
+```{r 右连接, echo=TRUE}
+flights2%>%
+  select(-origin,-dest)%>%
+  right_join(airlines,by="carrier")
+
+```
+
+
+##### 全连接
+
+两个表所有的$\color{#FF0000}{变量}$都保留，没有匹配上的当作是空值
+
+```{r 全连接, echo=TRUE}
+flights2%>%
+  full_join(airlines,by="carrier")
+
+```
+
+
+#### 当一个表有重复的键的时候，重复的键对应匹配多次
+
+![当一个表有重复的键的时候](C:/Users/xueenci/Desktop/R/4.png)
+
+
+#### 当多个表都有重复的键的时候，重复的键排列组合，都会放入新的表中
+
+
+![当多个表有重复的键的时候](C:/Users/xueenci/Desktop/R/5.png)
+
+
+by如果为NULL则匹配所有相同的变量
+
+（这里想试试markdown表格编写不知道能否成功）
+
+与基础merge函数可以实现一样的功能
+|dplyr  |merge|
+|-------------- | -------:  |:----:|
+|inner_join(x, y)	| merge(x, y)|
+|left_join(x, y)	  | merge(x, y, all.x = TRUE)|
+|right_join(x, y)	 | merge(x, y, all.y = TRUE) |
+|full_join(x, y)	  | merge(x, y, all.x = TRUE, all.y = TRUE)|
+
+与SQL语言也可以有一样的效果
+|dplyr    | sql |
+|----------    | ---------: |:--------:|
+|inner_join(x, y, by = "z")	| SELECT * FROM x INNER JOIN y USING (z)|
+|left_join(x, y, by = "z")	| SELECT * FROM x LEFT OUTER JOIN y USING (z)|
+|right_join(x, y, by = "z")	| SELECT * FROM x RIGHT OUTER JOIN y USING (z)|
+|full_join(x, y, by = "z")	| SELECT * FROM x FULL OUTER JOIN y USING (z)|
+
+
+### fileter joins
+
+semi_join(x, y) ：
+
+保留x,y中共有的观测
+
+keeps all observations in x that have a match in y.  
+
+anti_join(x, y) ：
+
+drops all observations in x that have a match in y.
+
+丢掉x,y共有的观测
+
+
+## 2.5 字符串操作  
+
+字符串操作，输入“str_”能自动补全很多
+
+```{r 字符串长度, echo=TRUE}
+length("aaa")
+str_length("aaa")
+
+```
+
+####组合字符串
+
+```{r 组合折叠字符串, echo=TRUE}
+str_c("x","y")
+
+str_c("x","y",sep=",")
+
+# 把一个向量折叠成一个字符串
+str_c(c("x", "y", "z"), collapse = ", ")
+
+```
+
+#### 替换字符串
+
+### 正则表达式
+
+#####  .代表同一行任意一个字符，如果本身就想找"."那就要用\\.
+
+##### 锚定一个字符的首尾，if you begin with power (^), you end up with money ($).
+
+```{r 正则表达式, echo=TRUE}
+x <- c("apple", "banana", "pear")
+str_view(x, "an")
+
+str_view(x, ".a.")
+
+
+x <- c("apple pie", "apple", "apple cake")
+str_view(x, "apple")
+
+
+str_view(x, "^apple$") #锚定字符串首尾
+```
+
+
 
 ##### 检测匹配
 
-```{r 检测匹配,}
-
+```{r 检测匹配, echo=TRUE}
 
 x <- c("apple", "banana", "pear")
 str_detect(x, "e")
@@ -923,20 +1076,22 @@ str_detect(x, "e")
 
 ##### 分组匹配
 
-
+--- 
 字符串的操作感觉平时用的比较少，没有认真记笔记，后面需要的时候再看  
 
 [**字符串**](https://r4ds.had.co.nz/strings.html#stringi)
 
+---
+
 ## 2.6 因子(等同于分类变量it’s an anagram of factors!)
 
-baseR 里面很多函数都是自动把字符串的转变成文本的  
+baseR 里面很多函数都是自动把字符串的转变成因子的  
 tidyverse里面没有这个问题
 
 可以参考：
 [ Wrangling categorical data in R](https://peerj.com/preprints/3163/)
 
-```{r }
+```{r 转换成因子, echo=TRUE}
 x1 <- c("Dec", "Apr", "Jan", "Mar")
 
 month_levels <- c(
@@ -944,14 +1099,14 @@ month_levels <- c(
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 )
 
-y1 <- factor(x1, levels = month_levels)
+y1 <- factor(x1, levels = month_levels)#有level 和label两个参数
 y1
 
 
 ```
 
 
-```{r 因子示例,}
+```{r 因子示例, echo=TRUE}
 forcats::gss_cat
 
 gss_cat%>%
@@ -961,8 +1116,8 @@ ggplot(gss_cat) +
   geom_bar(aes(x=race))+
   scale_x_discrete(drop=F)#不舍去空值
 
-ggplot(relig_summary, aes(tvhours, fct_reorder(relig, tvhours))) +
-  geom_point()
+# ggplot(relig_summary, aes(tvhours, fct_reorder(relig, tvhours))) +
+#   geom_point()
 
 
 ```
@@ -974,7 +1129,7 @@ ggplot(relig_summary, aes(tvhours, fct_reorder(relig, tvhours))) +
 比如有些情况想按照递增然后不知道的放最后这种
 
 
-```{r 因子排序问题,}
+```{r 因子排序问题, echo=TRUE}
 relig_summary <- gss_cat %>%
   group_by(relig) %>%
   summarise(
@@ -994,7 +1149,7 @@ by_age <- gss_cat %>%
   mutate(prop = n / sum(n))
 
 ggplot(by_age, aes(age, prop, colour = marital)) +
-  geom_line#no answer在前
+  geom_line()#no answer在前
 
 
 ggplot(by_age, aes(age, prop, colour = fct_reorder2(marital, age, prop))) +
@@ -1009,7 +1164,9 @@ ggplot(by_age, aes(age, prop, colour = fct_reorder2(marital, age, prop))) +
 
 lubridate包
 
-```{r 日期和时间,}
+日期和时间也没仔细记笔记，需要的时候可以再看
+
+```{r 日期和时间, echo=TRUE}
 
 library(lubridate)
 
@@ -1022,7 +1179,7 @@ now()
 
 #### 从字符串创建
 
-```{r 从字符串创建,}
+```{r 从字符串创建, echo=TRUE}
 ymd("2017-01-31")
 
 mdy("January 31st, 2017")
@@ -1033,7 +1190,9 @@ ymd(20170131)
 ```
 
 #### 从独立元素创建
+
 make_date  
+
 make_datetime
 
 ```{r 从独立元素创建,}
@@ -1047,6 +1206,7 @@ flights %>%
 
 
 #### 从其他元素创建
+
 as_datetime(today())
 
 as_date(now())
@@ -1082,8 +1242,8 @@ as.duration(my_age)
 
 ```
 
----
 
+---
 
 #  3.编程
 
@@ -1091,11 +1251,11 @@ as.duration(my_age)
 [advanced R](http://adv-r.had.co.nz.)
 
 
-## 3.1管道
+## 3.1管道 %>% 
 
 适用于线性长步骤（十步以内），一步接一步的
 
-```{r 管道caozuo,eval=FALSE, include=FALSE}
+```{r 管道caozuo, eval=FALSE, include=FALSE}
 foo_foo <- hop(foo_foo, through = forest)
 foo_foo <- scoop(foo_foo, up = field_mice)
 foo_foo <- bop(foo_foo, on = head)
@@ -1117,7 +1277,6 @@ rnorm(100) %>%
   str()
 
 
-
 rnorm(100) %>%
   matrix(ncol = 2) %T>% #不要左边
   plot() %>%
@@ -1133,6 +1292,7 @@ rnorm(100) %>%
 如果复制粘贴两次以上就可以考虑写一个函数来代替重复性工作
 
 用R写函数
+
 f1 <-function(x){
 rng<-range(x,na.rm=T)
 (x-rng[1])/(rng[2]-rng[1])
@@ -1142,6 +1302,7 @@ f1(c(0,5,10))
 形参放在function()里面，然后紧接着花括号
 
 不要忘了其他语言的，我还是喜欢写python的函数
+
 ```{python python函数,}
 def f1(x1,x2):
   s=x1+x2
@@ -1151,30 +1312,32 @@ f1(2,3)
 ```
 
 
-```{r rif语句, eval=FALSE, include=FALSE}
-if (condition) {
-  # code executed when condition is TRUE
-} else {
-  # code executed when condition is FALSE
-}
+```{r R if语句, echo=TRUE}
+# if (condition) {
+#   # code executed when condition is TRUE
+# } else {
+#   # code executed when condition is FALSE
+# }
 
 ```
 
 ```{pyrhon python if语句, eval=FALSE, include=FALSE}
-if contion:
-   # code executed when condition is TRUE
-else:
-  # code executed when condition is FALSE
+# if contion:
+#    # code executed when condition is TRUE
+# else:
+#   # code executed when condition is FALSE
 
 ```
 
 
 ## 3.3向量（向量化）
 
-6中原向量+列表  
+6种原向量+列表
+
 原向量logical, integer, double, character, complex, and raw.
 
 列表里面可以是不同质的  
+
 向量必须是同质的  
 
 is.xx()查看是否是
@@ -1190,14 +1353,20 @@ str()可以用来查看列表的结构
 
 ## 3.3 循环
 
-直接用c()来代表向量的话，比较占用空间，会变慢，所以一般是先创建一个新的向量，vector("类型“，“长度”)
+感觉循环也没有好好看，可以再翻
+
+
+直接用c()来代表向量的话，比较占用空间，会变慢，
+
+**所以一般是先创建一个新的向量，vector("类型“，“长度”)**
 
 seq_along是length()更为安全的版本，这个可以有0个长度
 
 用[[i]]来遍历比[i]更普遍
+
 for (i in seq_along(xs)), and extracting the value with x[[i]]
 
-```{r 循环, eval=FALSE, include=FALSE}
+```{r 循环, echo=TRUE}
 df <- tibble(
   a = rnorm(10),
   b = rnorm(10),
@@ -1213,13 +1382,14 @@ for (i in seq_along(df)) {            # 2. sequence
 
 ```
 
+
 迭代的数字索引是最普遍的形式，因为给定的位置，你可以提取名称和值
 
-```{r fornames, eval=FALSE, include=FALSE}
-for (i in seq_along(x)) {
-  name <- names(x)[[i]]
-  value <- x[[i]]
-}
+```{r fornames, echo=TRUE}
+# for (i in seq_along(x)) {
+#   name <- names(x)[[i]]
+#   value <- x[[i]]
+# }
 ```
 
 每一个for循环都可以改写成while循环，但while不能都改成for
@@ -1246,11 +1416,16 @@ R base里面有apply lapply tapply 适用于循环
 
 
 **map函数族可以代替for函数，（其实底层是C语言写的，更快一些）**
-```{r map函数族,}
+
+```{r map函数族, echo=TRUE}
 
 map_dbl(df, mean)
 
 z <- list(x = 1:3, y = 4:5)
+
+# map() 这个返回的是列表
+# map_int,lgl,dbl,chr,等等返回的是向量
+
 map_int(z, length)
 map(z, length)
 
@@ -1309,7 +1484,7 @@ options(na.action = na.warn)
 
 ## 4.2示例
 
-```{r A simple model,}
+```{r A simple model, echo=TRUE}
 ggplot(sim1, aes(x, y)) + 
   geom_point()
 
@@ -1373,7 +1548,7 @@ ggplot(sim1, aes(x, y)) +
 ```
 
 
-```{r lm,}
+```{r lm拟合一般线性模型,}
 sim1_mod <- lm(y~x,data=sim1)
 coef(sim1_mod)
 
@@ -1384,13 +1559,13 @@ coef(sim1_mod)
 
 ## 4.3模型可视化
 
-```{r 模型可视化,}
+```{r 模型可视化, echo=TRUE}
 grid <- sim1 %>% 
   data_grid(x) 
 grid
 
 grid <- grid %>% 
-  add_predictions(sim1_mod) 
+  add_predictions(sim1_mod) #添加预测列
 grid
 
 
@@ -1402,9 +1577,9 @@ ggplot(sim1, aes(x)) +
 
 ```
 
-```{r 残差,}
+```{r 残差可视化, echo=TRUE}
 sim1 <- sim1 %>% 
-  add_residuals(sim1_mod)
+  add_residuals(sim1_mod)#添加残差列
 sim1
 
 
@@ -1418,7 +1593,7 @@ ggplot(sim1, aes(x, resid)) +
 
 #### 分类变量 （0、1）
 
-```{r 分类变量,}
+```{r 分类变量, echo=TRUE}
 ggplot(sim2) + 
   geom_point(aes(x, y))
 
@@ -1437,7 +1612,8 @@ ggplot(sim2, aes(x)) +
 ```
 
 #### 分类变量和连续变量
-```{r 分类变量和连续变量,}
+
+```{r 分类变量和连续变量, echo=TRUE}
 ggplot(sim3, aes(x1, y)) + 
   geom_point(aes(colour = x2))
 
@@ -1470,7 +1646,7 @@ ggplot(sim3, aes(x1, resid, colour = x2)) +
 
 
 #### 两个连续变量
-```{r 两个连续变量,}
+```{r 两个连续变量, echo=TRUE}
 mod1 <- lm(y ~ x1 + x2, data = sim4)
 mod2 <- lm(y ~ x1 * x2, data = sim4)
 grid <- sim4 %>% 
@@ -1516,7 +1692,7 @@ options(na.action = na.warn)可以提示警告
 
 ## 4.4构建模型
 
-```{r}
+```{r 加载包,}
 library(tidyverse)
 library(modelr)
 options(na.action = na.warn)
@@ -1525,7 +1701,7 @@ library(nycflights13)
 library(lubridate)
 ```
 
-```{r 为什么好的钻石反而便宜的假象,}
+```{r 为什么好的钻石反而便宜的假象, echo=TRUE}
 
 ggplot(diamonds, aes(cut, price)) + geom_boxplot()
 ggplot(diamonds, aes(color, price)) + geom_boxplot()
@@ -1586,7 +1762,7 @@ ggplot(diamonds2, aes(lcarat, lresid2)) +
   geom_hex(bins = 50)
 ```
 
-```{r 什么影响每天飞机的数目,}
+```{r 什么影响每天飞机的数目, echo=TRUE}
 daily <- flights%>%
   mutate(date=make_date(year,month,day))%>%
   group_by(date)%>%
@@ -1630,4 +1806,168 @@ daily %>%
   geom_line(colour = "grey50") + 
   geom_smooth(se = FALSE, span = 0.20)
 ```
+
+## 4.5 许多模型
+
+当模型数量很多的时候
+
+### gapminder包
+gapminder包里面是一个很多国家预期寿命和GDP随时间变化的一个包，这个时候可以根据不同国家有不同的模型，就会有很多模型，
+
+
+```{r 以一个国家为例做一个模型但是有很多国家, echo=TRUE}
+library(tidyverse)
+library(modelr)
+library(gapminder)
+gapminder
+
+gapminder%>%
+  ggplot(aes(year,lifeExp,group=country))+
+  geom_line(alpha=1/3)
+
+
+nz <- filter(gapminder,country=="New Zealand")
+nz%>%
+  ggplot(aes(year,lifeExp))+
+  geom_line()+
+  ggtitle("Full data= ")
+
+nz_mod <- lm(lifeExp ~ year, data = nz)
+summary(nz_mod)
+nz%>%
+  add_predictions(nz_mod)%>%
+  ggplot(aes(year,pred))+
+  geom_line()+
+  ggtitle("Liner trend +")
+
+nz%>%
+  add_residuals(nz_mod)%>%
+  ggplot(aes(year,resid))+
+  geom_line()+
+  ggtitle("Remaining pattern")+
+  geom_hline(yintercept = 0,colour="white",size=3)#残差添加一个0的参考线
+```
+
+#### 嵌套的数据框
+
+每行都代表一个数据框的数据框(每行是一组！)
+
+
+```{r 嵌套的数据框, echo=TRUE}
+by_country <- gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+
+```
+
+
+#### 列表列，list-columns
+
+通过map循环产生的是包含所有模型的一个列表，可以把这个列表放到数据框里面
+
+
+```{r list-columns, echo=TRUE}
+country_model <- function(df) {
+  lm(lifeExp ~ year, data = df)
+}
+
+models <- map(by_country$data,country_model)#这生成的是一个包含所有模型的列表
+
+by_country <- by_country %>% 
+  mutate(model = map(data, country_model))#把列表这列加到数据框里面
+by_country
+
+
+```
+
+#### 解开嵌套，unnesting
+
+```{r unnesting, echo=TRUE}
+by_country <- by_country %>% 
+  mutate(
+    resids = map2(data, model, add_residuals)
+  )
+
+
+by_country <- by_country %>% 
+  mutate(
+    resids = map2(data, model, add_residuals)
+  )
+by_country
+
+
+#解嵌套
+resids <- unnest(by_country, resids)
+resids
+```
+
+
+```{r 分组残差可视化, echo=TRUE}
+resids %>% 
+  ggplot(aes(year, resid)) +
+    geom_line(aes(group = country), alpha = 1 / 3) + 
+    geom_smooth(se = FALSE)
+
+# Facetting by continent is particularly revealing:
+resids %>% 
+  ggplot(aes(year, resid, group = country)) +
+    geom_line(alpha = 1 / 3) + 
+    facet_wrap(~continent)
+
+```
+
+#### 模型质量
+
+```{r 把模型质量参数也放到列里面, echo=TRUE}
+library(broom)
+
+broom::glance(nz_mod)
+summary(nz_mod)
+
+glance <- by_country %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance,.drop=T)
+
+
+glance %>% 
+  arrange(r.squared)
+
+glance %>% 
+  ggplot(aes(continent, r.squared)) + 
+    geom_jitter(width = 0.5)
+
+
+bad_fit <- filter(glance, r.squared < 0.25)
+
+gapminder %>% 
+  semi_join(bad_fit, by = "country") %>% 
+  ggplot(aes(year, lifeExp, colour = country)) +
+    geom_line()
+
+```
+
+### list-columns
+
+工作流是：
+nest-mutate-map
+
+```{r list-columns2,}
+gapminder %>% 
+  nest(year:gdpPercap)
+```
+
+
+###  BROOM包 把模型的一些结果变成数据框
+
+Making tidy data with broom
+
+The broom package provides three general tools for turning models into tidy data frames:
+
+broom::glance(model) returns a row for each model. Each column gives a model summary: either a measure of model quality, or complexity, or a combination of the two.
+
+broom::tidy(model) returns a row for each coefficient in the model. Each column gives information about the estimate or its variability.
+
+broom::augment(model, data) returns a row for each row in data, adding extra values like residuals, and influence statistics.
+
+# **完结撒花**
 
